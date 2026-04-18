@@ -25,7 +25,7 @@
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Prompt', sans-serif; }
-        body { display: flex; background: var(--bg-main); color: var(--text-main); min-height: 100vh; overflow: hidden; }
+        body { display: flex; background: var(--bg-main); color: var(--text-main); height: 100dvh; overflow: hidden; }
 
         /* ================= SIDEBAR (Desktop) ================= */
         .sidebar { width: 250px; background: var(--bg-sidebar); color: white; display: flex; flex-direction: column; flex-shrink: 0; z-index: 100; transition: 0.3s; }
@@ -120,19 +120,19 @@
 
         /* ================= RESPONSIVE (มือถือ & แท็บเล็ต) ================= */
         @media (max-width: 1024px) {
-            .stats-grid { grid-template-columns: repeat(2, 1fr); } /* แท็บเล็ตโชว์ 2 คอลัมน์ */
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
         }
 
         @media (max-width: 768px) {
-            body { flex-direction: column; }
+            body { flex-direction: column; height: auto; overflow-y: auto; overflow-x: hidden; }
+            .main-content { overflow-y: visible; padding: 15px; padding-bottom: 90px; }
             
-            /* เปลี่ยน Sidebar เป็นเมนูบาร์ด้านล่าง */
             .sidebar { 
                 width: 100%; height: auto; position: fixed; bottom: 0; left: 0; 
                 flex-direction: row; padding: 0; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); 
-                border-top: 1px solid #334155; 
+                border-top: 1px solid #334155; z-index: 999;
             }
-            .user-profile, .brand { display: none; } /* ซ่อนโปรไฟล์และโลโก้ในมือถือ */
+            .user-profile, .brand { display: none; }
             
             .nav-menu { 
                 flex-direction: row; justify-content: space-around; padding: 8px 5px; 
@@ -147,22 +147,19 @@
                 border-left: none; border-bottom: 3px solid var(--primary); 
                 border-radius: 8px; background: rgba(255,255,255,0.1); 
             }
-
-            /* ปรับแต่งเนื้อหาหลัก */
-            .main-content { padding: 15px; padding-bottom: 90px; } /* เผื่อที่ให้เมนูด้านล่าง */
             
             .header-title { flex-direction: column; gap: 15px; }
             .btn-action, .filter-select { width: 100%; justify-content: center; }
             
-            .stats-grid { grid-template-columns: 1fr; gap: 15px; margin-bottom: 20px; } /* มือถือโชว์แถวเดียว */
+            .stats-grid { grid-template-columns: 1fr; gap: 15px; margin-bottom: 20px; }
             .card { padding: 15px; }
             
             .form-box { padding: 20px; border-radius: 10px; }
-            .type-selector { flex-direction: column; gap: 8px; } /* ปุ่มประเภทเรียงลงมา */
+            .type-selector { flex-direction: column; gap: 8px; }
             .calc-row { flex-direction: column; gap: 0; }
             
             .chart-container { padding: 15px; overflow-x: auto; }
-            canvas { min-width: 400px; } /* ให้กราฟเลื่อนซ้ายขวาได้ถ้ายาวไป */
+            canvas { min-width: 400px; }
 
             #toast { bottom: 90px; right: 50%; transform: translateX(50%) translateY(100px); width: 90%; text-align: center; }
             #toast.show { transform: translateX(50%) translateY(0); }
@@ -374,7 +371,6 @@
             }
         }
 
-        // ================= จัดการเมนูลัด =================
         function renderQuickMenu() {
             const container = document.getElementById('quick-btn-container');
             container.innerHTML = '';
@@ -422,7 +418,6 @@
             calculateTotal();
         }
 
-        // ================= เลือกประเภท =================
         function selectType(type) {
             currentType = type;
             document.querySelectorAll('.type-btn').forEach(btn => btn.classList.remove('active'));
@@ -453,7 +448,6 @@
             }
         }
 
-        // ================= บันทึกข้อมูล =================
         function saveRecord() {
             const date = document.getElementById('input-date').value;
             const amount = parseFloat(document.getElementById('input-amount').value);
@@ -470,7 +464,6 @@
             records.push({ id: Date.now(), date, type: currentType, amount, note });
             localStorage.setItem('zabzeedPOS', JSON.stringify(records));
             
-            // ล้างข้อมูลฟอร์ม
             document.getElementById('input-amount').value = '';
             document.getElementById('input-note').value = '';
             document.getElementById('input-qty').value = '';
@@ -519,7 +512,6 @@
             tbodyHistory.innerHTML = '';
             tbodyReport.innerHTML = '';
             
-            // ================= 1. ประวัติย้อนหลัง =================
             const selectedMonth = document.getElementById('month-filter').value;
             let displayRecords = [...records].sort((a, b) => new Date(b.date) - new Date(a.date));
             
@@ -545,7 +537,6 @@
             });
             if(displayRecords.length === 0) tbodyHistory.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 20px; color: var(--text-muted);">ไม่มีข้อมูล</td></tr>';
 
-            // ================= 2. คำนวณแดชบอร์ดและสมุดบัญชีรายเดือน =================
             const reportData = {};
             const chartDataMap = {};
             const last6Months = [];
@@ -578,7 +569,6 @@
                 }
             });
 
-            // ================= 3. แสดงผลตารางบัญชีรายเดือน =================
             const sortedMonths = Object.keys(reportData).sort().reverse();
             sortedMonths.forEach(ym => {
                 const data = reportData[ym];
@@ -599,7 +589,6 @@
             });
             if(sortedMonths.length === 0) tbodyReport.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 20px; color: var(--text-muted);">ยังไม่มีข้อมูล</td></tr>';
 
-            // ================= 4. อัปเดตตัวเลขแดชบอร์ด =================
             const net = tIncome - tMaterial - tRent;
             document.getElementById('d-income').innerText = `฿${fmt(tIncome)}`;
             document.getElementById('d-material').innerText = `฿${fmt(tMaterial)}`;
@@ -611,7 +600,6 @@
             if(net < 0) { elNet.style.color = 'var(--red)'; cardNet.style.borderTop = '1px solid var(--border)'; } 
             else { elNet.style.color = 'var(--text-main)'; cardNet.style.borderTop = '1px solid var(--border)'; }
 
-            // ================= 5. วาดกราฟ 6 เดือน =================
             if(myChart) myChart.destroy();
             myChart = new Chart(document.getElementById('mainChart').getContext('2d'), {
                 type: 'bar',
